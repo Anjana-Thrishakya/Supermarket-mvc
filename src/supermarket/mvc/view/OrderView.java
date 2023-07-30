@@ -5,14 +5,20 @@
 package supermarket.mvc.view;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import supermarket.mvc.controller.CustomerController;
 import supermarket.mvc.controller.ItemController;
+import supermarket.mvc.controller.OrderController;
 import supermarket.mvc.model.CustomerModel;
 import supermarket.mvc.model.ItemModel;
+import supermarket.mvc.model.OrderDetailModel;
+import supermarket.mvc.model.OrderModel;
 
 /**
  *
@@ -22,6 +28,9 @@ public class OrderView extends javax.swing.JFrame {
 
     private CustomerController customerController;
     private ItemController itemController;
+    private OrderController orderController;
+    
+    ArrayList<OrderDetailModel> orderDetailModels = new ArrayList<>();
 
     /**
      * Creates new form OrderView
@@ -29,6 +38,7 @@ public class OrderView extends javax.swing.JFrame {
     public OrderView() {
         customerController = new CustomerController();
         itemController = new ItemController();
+        orderController = new OrderController();
         initComponents();
         loadTable();
     }
@@ -63,6 +73,7 @@ public class OrderView extends javax.swing.JFrame {
         itemAddButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         orderDetailTable = new javax.swing.JTable();
+        placeOrderButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -135,6 +146,15 @@ public class OrderView extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(orderDetailTable);
 
+        placeOrderButton.setFont(new java.awt.Font("Helvetica Neue", 1, 18)); // NOI18N
+        placeOrderButton.setText("Place Order");
+        placeOrderButton.setToolTipText("");
+        placeOrderButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                placeOrderButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout formPanelLayout = new javax.swing.GroupLayout(formPanel);
         formPanel.setLayout(formPanelLayout);
         formPanelLayout.setHorizontalGroup(
@@ -165,6 +185,9 @@ public class OrderView extends javax.swing.JFrame {
                         .addComponent(itemAddButton)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
             .addGroup(formPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1))
+            .addGroup(formPanelLayout.createSequentialGroup()
                 .addGroup(formPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, formPanelLayout.createSequentialGroup()
                         .addContainerGap()
@@ -184,11 +207,11 @@ public class OrderView extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(custSearchButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(custDataLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                                .addComponent(custDataLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, formPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(placeOrderButton)))
                 .addContainerGap())
-            .addGroup(formPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1))
         );
         formPanelLayout.setVerticalGroup(
             formPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -223,7 +246,9 @@ public class OrderView extends javax.swing.JFrame {
                     .addComponent(itemAddButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 249, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(placeOrderButton)
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -255,8 +280,12 @@ public class OrderView extends javax.swing.JFrame {
     }//GEN-LAST:event_itemSearchButtonActionPerformed
 
     private void itemAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemAddButtonActionPerformed
-        // TODO add your handling code here:
+        addToTable();
     }//GEN-LAST:event_itemAddButtonActionPerformed
+
+    private void placeOrderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_placeOrderButtonActionPerformed
+        placeOrder();
+    }//GEN-LAST:event_placeOrderButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -313,6 +342,7 @@ public class OrderView extends javax.swing.JFrame {
     private javax.swing.JTable orderDetailTable;
     private javax.swing.JLabel orderIdLabel;
     private javax.swing.JTextField orderIdText;
+    private javax.swing.JButton placeOrderButton;
     private javax.swing.JLabel qtyLabel;
     private javax.swing.JTextField qtyText;
     // End of variables declaration//GEN-END:variables
@@ -359,5 +389,33 @@ public class OrderView extends javax.swing.JFrame {
         };
 
         orderDetailTable.setModel(dtm);
+    }
+
+    private void addToTable() {
+        
+        OrderDetailModel odm = new OrderDetailModel("", itemIdText.getText(), Integer.parseInt(qtyText.getText()), Double.parseDouble(discountText.getText()));
+        orderDetailModels.add(odm);
+        
+        Object[] rowData = {odm.getItemId(), odm.getQty(), odm.getDiscount()};
+        
+        DefaultTableModel dtm = (DefaultTableModel) orderDetailTable.getModel();
+        dtm.addRow(rowData);
+        
+        clearItem();
+    }
+    
+    public void clearItem(){
+        itemIdText.setText("");
+        qtyText.setText("");
+        discountText.setText("");
+        itemDataLabel.setText("");
+    }
+
+    private void placeOrder() {
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        OrderModel model = new OrderModel(orderIdText.getText(), sdf.format(new Date()), custIdText.getText());
+
+        String resp = orderController.placeOrder(model, orderDetailModels);
     }
 }
