@@ -5,9 +5,11 @@
 package supermarket.mvc.view;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import supermarket.mvc.controller.CustomerController;
 import supermarket.mvc.model.CustomerModel;
 
@@ -25,6 +27,7 @@ public class CustomerView extends javax.swing.JFrame {
     public CustomerView() {
         customerController = new CustomerController();
         initComponents();
+        loadAllCustomers();
     }
 
     /**
@@ -61,6 +64,9 @@ public class CustomerView extends javax.swing.JFrame {
         saveButton = new javax.swing.JButton();
         updateButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
+        tablePanel = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        customerTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -228,12 +234,43 @@ public class CustomerView extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        customerTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(customerTable);
+
+        javax.swing.GroupLayout tablePanelLayout = new javax.swing.GroupLayout(tablePanel);
+        tablePanel.setLayout(tablePanelLayout);
+        tablePanelLayout.setHorizontalGroup(
+            tablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tablePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1)
+                .addContainerGap())
+        );
+        tablePanelLayout.setVerticalGroup(
+            tablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tablePanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(157, 157, 157))
+        );
+
         javax.swing.GroupLayout basePanelLayout = new javax.swing.GroupLayout(basePanel);
         basePanel.setLayout(basePanelLayout);
         basePanelLayout.setHorizontalGroup(
             basePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(headderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(fornPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(tablePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         basePanelLayout.setVerticalGroup(
             basePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -241,7 +278,9 @@ public class CustomerView extends javax.swing.JFrame {
                 .addComponent(headderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(fornPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 287, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(tablePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -252,7 +291,9 @@ public class CustomerView extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(basePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(basePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 6, Short.MAX_VALUE))
         );
 
         pack();
@@ -268,6 +309,7 @@ public class CustomerView extends javax.swing.JFrame {
     private javax.swing.JPanel basePanel;
     private javax.swing.JLabel cityLabel;
     private javax.swing.JTextField cityText;
+    private javax.swing.JTable customerTable;
     private javax.swing.JButton deleteButton;
     private javax.swing.JLabel dobLabel;
     private javax.swing.JTextField dobText;
@@ -276,6 +318,7 @@ public class CustomerView extends javax.swing.JFrame {
     private javax.swing.JLabel headerLabel;
     private javax.swing.JLabel idLabel;
     private javax.swing.JTextField idText;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameText;
     private javax.swing.JLabel provinceLabel;
@@ -283,6 +326,7 @@ public class CustomerView extends javax.swing.JFrame {
     private javax.swing.JLabel salaryLabel;
     private javax.swing.JTextField salaryText;
     private javax.swing.JButton saveButton;
+    private javax.swing.JPanel tablePanel;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JTextField titleText;
     private javax.swing.JButton updateButton;
@@ -304,6 +348,53 @@ public class CustomerView extends javax.swing.JFrame {
             
             String resp = customerController.saveCustomer(customer);
             JOptionPane.showMessageDialog(this, resp);
+            clear();
+            loadAllCustomers();
+        } catch (SQLException ex) {
+            Logger.getLogger(CustomerView.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
+    }
+    
+    public void clear(){
+        idText.setText("");
+        titleText.setText("");
+        nameText.setText("");
+        dobText.setText("");
+        salaryText.setText("");
+        addressText.setText("");
+        cityText.setText("");
+        provinceText.setText("");
+        zipText.setText("");
+    }
+    
+    public void loadAllCustomers(){
+        try {
+            String[] collumns = {"Id", "Name", "Salary", "Dob", "Address", "Postal Code"};
+            
+            DefaultTableModel dtm = new DefaultTableModel(collumns, 0){
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+            
+            customerTable.setModel(dtm);
+            
+            ArrayList<CustomerModel> customerModels = customerController.getAllCustomer();
+            
+            for (CustomerModel customer : customerModels) {
+                Object[] rowData = {
+                    customer.getCustId(),
+                    customer.getTitle() + " " + customer.getName(),
+                    customer.getSalary(),
+                    customer.getDob(),
+                    customer.getAddress()+ " " + customer.getCity(),
+                    customer.getZip()
+                };
+                
+                dtm.addRow(rowData);
+            }
         } catch (SQLException ex) {
             Logger.getLogger(CustomerView.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage());
