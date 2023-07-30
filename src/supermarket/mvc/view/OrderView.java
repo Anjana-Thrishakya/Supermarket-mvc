@@ -413,9 +413,14 @@ public class OrderView extends javax.swing.JFrame {
 
     private void placeOrder() {
         
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        OrderModel model = new OrderModel(orderIdText.getText(), sdf.format(new Date()), custIdText.getText());
-
-        String resp = orderController.placeOrder(model, orderDetailModels);
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            OrderModel model = new OrderModel(orderIdText.getText(), sdf.format(new Date()), custIdText.getText());
+            
+            String resp = orderController.placeOrder(model, orderDetailModels);
+            JOptionPane.showMessageDialog(this, resp);
+        } catch (SQLException ex) {
+            Logger.getLogger(OrderView.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
